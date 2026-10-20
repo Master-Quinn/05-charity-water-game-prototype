@@ -88,22 +88,22 @@ body {
     font-weight: bold;
 }
 
+.player {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background-color: #FFC907;
+  border-radius: 50%;
+}
+
 .water-drop {
     position: absolute;
     width: 60px;  /* increased from 40px */
     height: 60px; /* increased from 40px */
     background-color: #0099ff;
     border-radius: 50%;
-    animation: dropFall linear forwards;
+    animation: dropRise linear forwards;
     transform-origin: center;
-    cursor: pointer;
-    padding: 15px;  /* Add padding for larger click area */
-    margin: -15px;  /* Offset padding to maintain visual size */
-    transition: transform 0.1s ease;  /* Smooth hover effect */
-}
-
-.water-drop:hover {
-    transform: scale(1.1);  /* Slight grow effect on hover */
 }
 
 .bad-drop {
@@ -125,12 +125,12 @@ body {
     text-align: center;
 }
 
-@keyframes dropFall {
+@keyframes dropRise {
     from {
-        transform: translateY(-20px);
+        transform: translateY(600px);
     }
     to {
-        transform: translateY(600px);
+        transform: translateY(-20px);
     }
 }
 

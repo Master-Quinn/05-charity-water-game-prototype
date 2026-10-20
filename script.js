@@ -2,6 +2,7 @@
 // Variables to control game state
 let gameRunning = false; // Keeps track of whether game is active or not
 let dropMaker; // Will store our timer that creates drops regularly
+let player; //Will act as a "hitbox" for the player to use
 
 // Wait for button click to start the game
 document.getElementById("start-btn").addEventListener("click", startGame);
@@ -11,6 +12,17 @@ function startGame() {
   if (gameRunning) return;
 
   gameRunning = true;
+
+  //Create player entity
+  player = document.createElement("div");
+  player.className = "player";
+
+  //Set player starting position
+  const gameWidth = document.getElementById("game-container").offsetWidth;
+  player.style.left = (gameWidth/2 - 30) + "px";
+  
+  //Add player to game
+  document.getElementById("game-container").appendChild(player);
 
   // Create new drops every second (1000 milliseconds)
   dropMaker = setInterval(createDrop, 1000);
