@@ -1,12 +1,15 @@
 // Log a message to the console to ensure the script is linked correctly
 // Variables to control game state
 let gameRunning = false; // Keeps track of whether game is active or not
-let dropMaker; // Will store our timer that creates drops regularly
 let player; //Serves as the entity controlled by player
 let playerX; //Global variable to handle player position
 
+const dropCD = 50;  //Serves as the cooldown for droplets spawning
+const playerSpeed = 15;   //Serves as the speed at which player moves
+
 // Wait for button click to start the game
 document.getElementById("start-btn").addEventListener("click", startGame);
+let score = document.getElementById("score");
 
 function startGame() {
   // Prevent multiple games from running at once
@@ -27,10 +30,10 @@ function startGame() {
   document.getElementById("game-container").appendChild(player);
 
   // Create new drops every second (1000 milliseconds)
-  dropMaker = setInterval(createDrop, 1000);
+  //dropMaker = setInterval(createDrop, 1000);
 
   // Create player loop for handling collisions & movement
-  requestAnimationFrame(playerHandler);
+  requestAnimationFrame(gameLoop);
 }
 //Handle keypresses
 const keys = {
@@ -50,10 +53,35 @@ document.addEventListener("keyup", (event) => {
   }
 })
 
+let lastTime = 0;
+let dropTimer = 0;
+function gameLoop(timestamp) {
+  let gameTime = (timestamp - lastTime) / 1000;
+  lastTime = timestamp;
+  if (gameTime > 0.1) gameTime = 0.1;
+  playerHandler();
+
+  if (dropTimer <= 0) {
+    createDrop();
+    dropTimer = dropCD;
+  } else {
+    dropTimer -= 1;
+    console.log(dropTimer);
+  }
+
+  let dropList = document.querySelectorAll(".water-drop");
+  dropList.forEach((drop) => {
+    if (checkCollision(player, drop)) {
+      score.textContent = String(parseInt(score.textContent, 10) + 10);
+      drop.remove();
+    }
+  });
+
+  requestAnimationFrame(gameLoop);
+}
+
 function playerHandler() {
-  requestAnimationFrame(playerHandler);
   //Handle left & right movement
-  const playerSpeed = 15;
   if (keys["ArrowLeft"]) {
     playerX -= playerSpeed;
   } else if (keys["ArrowRight"]) {
@@ -62,9 +90,19 @@ function playerHandler() {
     return;
   }
   player.style.left = `${playerX}px`;
-  //Handle score increase whenever player hits a drop of water
+}
 
-  //Handle game end whenever player hits an obstacle
+function checkCollision(p, nonP) {
+    const rect1 = p.getBoundingClientRect();
+    const rect2 = nonP.getBoundingClientRect();
+
+    // Check if rect1 and rect2 overlap on both the X and Y axes
+    return !(
+        rect1.right < rect2.left ||  // rect1 is completely to the left of rect2
+        rect1.left > rect2.right ||  // rect1 is completely to the right of rect2
+        rect1.bottom < rect2.top ||  // rect1 is completely above rect2
+        rect1.top > rect2.bottom     // rect1 is completely below rect2
+    );
 }
 
 function createDrop() {
@@ -83,14 +121,14 @@ function createDrop() {
   const gameWidth = document.getElementById("game-container").offsetWidth;
   const xPosition = Math.random() * (gameWidth - 60);
   drop.style.left = xPosition + "px";
-
+  
   // Make drops fall for 4 seconds
   drop.style.animationDuration = "4s";
 
   // Add the new drop to the game screen
   document.getElementById("game-container").appendChild(drop);
 
-  // Remove drops that reach the bottom (weren't clicked)
+  // Remove drops that reach the top
   drop.addEventListener("animationend", () => {
     drop.remove(); // Clean up drops that weren't caught
   });
