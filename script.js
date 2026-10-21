@@ -51,7 +51,7 @@ document.addEventListener("keyup", (event) => {
 })
 
 function playerHandler() {
-  console.log("Player loop step");
+  requestAnimationFrame(playerHandler);
   //Handle left & right movement
   const playerSpeed = 15;
   if (keys["ArrowLeft"]) {
@@ -65,8 +65,6 @@ function playerHandler() {
   //Handle score increase whenever player hits a drop of water
 
   //Handle game end whenever player hits an obstacle
-
-  requestAnimationFrame(playerHandler);
 }
 
 function createDrop() {
