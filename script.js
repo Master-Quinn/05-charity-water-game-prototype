@@ -2,7 +2,8 @@
 // Variables to control game state
 let gameRunning = false; // Keeps track of whether game is active or not
 let dropMaker; // Will store our timer that creates drops regularly
-let player; //Will act as a "hitbox" for the player to use
+let player; //Serves as the entity controlled by player
+let playerX; //Global variable to handle player position
 
 // Wait for button click to start the game
 document.getElementById("start-btn").addEventListener("click", startGame);
@@ -19,13 +20,53 @@ function startGame() {
 
   //Set player starting position
   const gameWidth = document.getElementById("game-container").offsetWidth;
-  player.style.left = (gameWidth/2 - 30) + "px";
+  playerX = gameWidth/2 - 30;
+  player.style.left = playerX + "px";
   
   //Add player to game
   document.getElementById("game-container").appendChild(player);
 
   // Create new drops every second (1000 milliseconds)
   dropMaker = setInterval(createDrop, 1000);
+
+  // Create player loop for handling collisions & movement
+  requestAnimationFrame(playerHandler);
+}
+//Handle keypresses
+const keys = {
+  ArrowRight: false,
+  ArrowLeft: false
+};
+document.addEventListener("keydown", (event) => {
+  if (event.key in keys) {
+    event.preventDefault();
+    keys[event.key] = true;
+  }
+})
+document.addEventListener("keyup", (event) => {
+  if (event.key in keys) {
+    event.preventDefault();
+    keys[event.key] = false;
+  }
+})
+
+function playerHandler() {
+  console.log("Player loop step");
+  //Handle left & right movement
+  const playerSpeed = 15;
+  if (keys["ArrowLeft"]) {
+    playerX -= playerSpeed;
+  } else if (keys["ArrowRight"]) {
+    playerX += playerSpeed;
+  } else {
+    return;
+  }
+  player.style.left = `${playerX}px`;
+  //Handle score increase whenever player hits a drop of water
+
+  //Handle game end whenever player hits an obstacle
+
+  requestAnimationFrame(playerHandler);
 }
 
 function createDrop() {
