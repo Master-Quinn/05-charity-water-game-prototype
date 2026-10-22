@@ -51,7 +51,7 @@ body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.timer {
+.depth {
     flex: 0 1 auto;
     font-size: 24px;
     font-weight: bold;
@@ -107,7 +107,13 @@ body {
 }
 
 .bad-drop {
+    position: absolute;
+    width: 60px;  /* increased from 40px */
+    height: 60px; /* increased from 40px */
     background-color: #ff4444;
+    border-radius: 50%;
+    animation: dropRise linear forwards;
+    transform-origin: center;
 }
 
 .game-title {

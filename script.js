@@ -5,17 +5,23 @@ let player; //Serves as the entity controlled by player
 let playerX; //Global variable to handle player position
 
 const dropCD = 50;  //Serves as the cooldown for droplets spawning
+const rockCD = 50;  //Serves as the cooldown for rocks spawning
 const playerSpeed = 15;   //Serves as the speed at which player moves
 
 // Wait for button click to start the game
 document.getElementById("start-btn").addEventListener("click", startGame);
 let score = document.getElementById("score");
+let depth = document.getElementById("depth");
 
 function startGame() {
   // Prevent multiple games from running at once
   if (gameRunning) return;
 
   gameRunning = true;
+
+  //Set score & depth to 0
+  score.textContent = "0";
+  depth.textContent = "0";
 
   //Create player entity
   player = document.createElement("div");
@@ -55,20 +61,31 @@ document.addEventListener("keyup", (event) => {
 
 let lastTime = 0;
 let dropTimer = 0;
+let rockTimer = 25;
 function gameLoop(timestamp) {
   let gameTime = (timestamp - lastTime) / 1000;
   lastTime = timestamp;
   if (gameTime > 0.1) gameTime = 0.1;
   playerHandler();
-
+  
+  depth.textContent = String(parseInt(depth.textContent, 10) + 1);
+  
+  //Create drops & rocks when their timers hit 0, then reset their cooldowns
   if (dropTimer <= 0) {
     createDrop();
     dropTimer = dropCD;
   } else {
     dropTimer -= 1;
-    console.log(dropTimer);
   }
 
+  if (rockTimer <= 0) {
+    createRock();
+    rockTimer = rockCD;
+  } else {
+    rockTimer -= 1;
+  }
+
+  //When colliding with water droplet, get 10 points
   let dropList = document.querySelectorAll(".water-drop");
   dropList.forEach((drop) => {
     if (checkCollision(player, drop)) {
@@ -76,16 +93,35 @@ function gameLoop(timestamp) {
       drop.remove();
     }
   });
-
-  requestAnimationFrame(gameLoop);
+  //When colliding with a rock, clear game & prompt a restart by clicking start game again
+  let rockList = document.querySelectorAll(".bad-drop");
+  rockList.forEach((rock) => {
+    if (checkCollision(player, rock)) {
+      console.log("Game Over!");
+      document.getElementById("game-container").replaceChildren();
+      gameRunning = false;
+      return;
+    }
+  });
+  if (gameRunning) {
+    requestAnimationFrame(gameLoop);
+  }
 }
 
 function playerHandler() {
   //Handle left & right movement
   if (keys["ArrowLeft"]) {
-    playerX -= playerSpeed;
+    if (playerX < 0) {
+      playerX = 0;
+    } else {
+      playerX -= playerSpeed;
+    }
   } else if (keys["ArrowRight"]) {
-    playerX += playerSpeed;
+    if (playerX > document.getElementById("game-container").offsetWidth - 60) {
+      playerX = document.getElementById("game-container").offsetWidth - 60;
+    } else {
+      playerX += playerSpeed;
+    }
   } else {
     return;
   }
@@ -131,5 +167,34 @@ function createDrop() {
   // Remove drops that reach the top
   drop.addEventListener("animationend", () => {
     drop.remove(); // Clean up drops that weren't caught
+  });
+}
+
+function createRock() {
+  // Create a new div element that will be our water drop
+  const rock = document.createElement("div");
+  rock.className = "bad-drop";
+
+  // Make drops different sizes for visual variety
+  const initialSize = 60;
+  const sizeMultiplier = Math.random() * 0.8 + 0.5;
+  const size = initialSize * sizeMultiplier;
+  rock.style.width = rock.style.height = `${size}px`;
+
+  // Position the drop randomly across the game width
+  // Subtract 60 pixels to keep drops fully inside the container
+  const gameWidth = document.getElementById("game-container").offsetWidth;
+  const xPosition = Math.random() * (gameWidth - 60);
+  rock.style.left = xPosition + "px";
+  
+  // Make drops fall for 4 seconds
+  rock.style.animationDuration = "4s";
+
+  // Add the new drop to the game screen
+  document.getElementById("game-container").appendChild(rock);
+
+  // Remove drops that reach the top
+  rock.addEventListener("animationend", () => {
+    rock.remove(); // Clean up drops that weren't caught
   });
 }
